@@ -1,17 +1,44 @@
 import debounce from '../node_modules/lodash.debounce';
-
 import { defaults, info, success, error } from '@pnotify/core';
 import '@pnotify/core/dist/PNotify.css';
 import '@pnotify/core/BrightTheme.css';
+import './main.scss';
+import countriesAPI from './js/fetchCountries';
+import getRefs from './js/getRefs';
+
 defaults.delay = 1000;
 
-import './main.scss';
+const refs = getRefs();
 
-const refs = {
-  input: document.querySelector('#searchCountry'),
-  container: document.querySelector('.containerCountry'),
-  country: '',
-};
+refs.inputSearch.addEventListener('input', debounce(searchCountry, 500));
+
+function searchCountry() {
+  refs.container.innerHTML = '';
+  refs.country = refs.inputSearch.value;
+  countriesAPI.fetchCountries(refs.country).then(data => {
+    renderCountries(data);
+  });
+}
+
+function renderCountries(data) {
+  if (data.length === 1) {
+    onlyCountry(data);
+    success({
+      text: ' Your query is correct!',
+    });
+  }
+  if (data.length > 2 && data.length <= 10) {
+    listCountries(data);
+    info({
+      text: ' For more detailed information please specify the query!',
+    });
+  }
+  if (data.length > 10) {
+    error({
+      text: 'Too many matches found. Please enter a more specific query!',
+    });
+  }
+}
 
 function onlyCountry(data) {
   const cardCountry = data.map(element => {
@@ -27,6 +54,7 @@ function onlyCountry(data) {
     });
   });
 }
+
 function listCountries(data) {
   const list = document.createElement('ul');
   const items = data.map(element => {
@@ -37,30 +65,5 @@ function listCountries(data) {
   refs.container.append(list);
 }
 
-function searchCountry() {
-  refs.container.innerHTML = '';
-  refs.country = refs.input.value;
-  fetch(`https://restcountries.eu/rest/v2/name/${refs.country}`)
-    .then(response => response.json())
-    .then(data => {
-      if (data.length === 1) {
-        onlyCountry(data);
-        success({
-          text: ' Your query is correct!',
-        });
-      }
-      if (data.length > 2 && data.length <= 10) {
-        listCountries(data);
-        info({
-          text: ' For more detailed information please specify the query!',
-        });
-      }
-      if (data.length > 10) {
-        error({
-          text: 'Too many matches found. Please enter a more specific query!',
-        });
-      }
-    });
-}
 
-refs.input.addEventListener('input', debounce(searchCountry, 500));
+
