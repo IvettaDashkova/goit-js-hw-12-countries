@@ -8,7 +8,7 @@ function fetchCountries(searchQuery) {
         return error({
           text: 'Unfortunately the country name you entered is not correct!',
         });
-      } if (response.status ===200) {
+      } if (response.ok) {
           return response.json();
       }
     })
