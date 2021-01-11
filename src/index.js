@@ -5,6 +5,8 @@ import '@pnotify/core/BrightTheme.css';
 import './main.scss';
 import countriesAPI from './js/fetchCountries';
 import getRefs from './js/getRefs';
+import onlyCountryTemplate from './templates/only-country.hbs';
+import listCountriesTemplate from './templates/list-countries.hbs';
 
 defaults.delay = 1000;
 
@@ -15,9 +17,11 @@ refs.inputSearch.addEventListener('input', debounce(searchCountry, 500));
 function searchCountry() {
   refs.container.innerHTML = '';
   refs.country = refs.inputSearch.value;
-  countriesAPI.fetchCountries(refs.country).then(data => {
-    renderCountries(data);
-  });
+  if (refs.inputSearch.value !== '') {
+    return countriesAPI
+      .fetchCountries(refs.country)
+      .then(data => renderCountries(data));
+  }
 }
 
 function renderCountries(data) {
@@ -41,29 +45,11 @@ function renderCountries(data) {
 }
 
 function onlyCountry(data) {
-  const cardCountry = data.map(element => {
-    const textContent = `<h2 data-description="name">${element.name}</h2><div class="content"><div class="textcontent"><p data-description="capital"><span>Capital: </span>${element.capital}</p><p data-description="population"><span>Population: </span>${element.population}</p><ul data-description="languages"><span>Languages: </span></ul></div> <img src="${element.flag}"></div>`;
-    refs.container.insertAdjacentHTML('afterbegin', textContent);
-
-    const listLang = element.languages.forEach(language => {
-      const item = document.createElement('li');
-      item.textContent = language.name;
-      refs.container
-        .querySelector('[data-description ="languages"]')
-        .append(item);
-    });
-  });
+  const textContent = onlyCountryTemplate(data);
+  refs.container.insertAdjacentHTML('afterbegin', textContent);
 }
 
 function listCountries(data) {
-  const list = document.createElement('ul');
-  const items = data.map(element => {
-    const item = document.createElement('li');
-    item.textContent = element.name;
-    list.append(item);
-  });
-  refs.container.append(list);
+  const textContent = listCountriesTemplate(data);
+  refs.container.insertAdjacentHTML('afterbegin', textContent);
 }
-
-
-
