@@ -16,15 +16,22 @@ refs.inputSearch.addEventListener('input', debounce(searchCountry, 500));
 
 function searchCountry() {
   refs.container.innerHTML = '';
-  refs.country = refs.inputSearch.value;
   if (refs.inputSearch.value !== '') {
     return countriesAPI
-      .fetchCountries(refs.country)
-      .then(data => renderCountries(data));
+      .fetchCountries(refs.inputSearch.value)
+      .then(data => renderCountries(data))
+      .catch((err) => {
+        console.warn(err)
+      })
   }
 }
 
 function renderCountries(data) {
+  if (data.status === 404) {
+    return error({
+      text: 'Unfortunately the country name you entered is not correct!',
+    });
+  }
   if (data.length === 1) {
     onlyCountry(data);
     success({
